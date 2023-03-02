@@ -1,0 +1,99 @@
+version: '3'
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    restart: always
+    ports:
+      - "8080:80"
+    container_name: api-gateway
+    image: api-gateway
+    environment:
+      - REDIS_HOST=redis-final-project:6379
+      - USER_CHANNEL=user-channel
+      - NEW_DOCUMENT_CHANNEL=proposed-document-channel
+      - UPDATE_DOCUMENT_CHANNEL=update-document-channel
+      - NEW_BUILDING_CHANNEL=new-building-channel
+      - UPDATE_BUILDING_CHANNEL=update-building-channel
+      - SECRET_KEY=verysupersecretkey
+      - TOKEN_SERVICE=supersecrettokenservices
+  
+  approval-service:
+    build: ./approval-service
+    restart: always
+    ports:
+      - "8081:80"
+    container_name: approval-service
+    image: approval-service
+    environment:
+      - REDIS_HOST=redis-final-project:6379
+      - DB_URL=root:rootsupersecret@tcp(mysql-final-project)/document_verification?charset=utf8mb4&parseTime=True&loc=Local
+      - USER_CHANNEL=user-channel
+      - NEW_DOCUMENT_CHANNEL=proposed-document-channel
+      - UPDATE_DOCUMENT_CHANNEL=update-document-channel
+      - UPDATE_BUILDING_CHANNEL=update-building-channel
+      - SECRET_KEY=verysupersecretkey
+      - TOKEN_SERVICE=supersecrettokenservices
+  
+  auth-service:
+    build: ./auth-service
+    restart: always
+    ports:
+      - "8082:80"
+    container_name: auth-service
+    image: auth-service
+    environment:
+      - DB_URL=root:rootsupersecret@tcp(mysql-final-project)/document_verification?charset=utf8mb4&parseTime=True&loc=Local
+      - SECRET_KEY=verysupersecretkey
+      - TOKEN_SERVICE=supersecrettokenservices
+
+  building-service:
+    build: ./building-service
+    restart: always
+    ports:
+      - "8083:80"
+    container_name: building-service
+    image: building-service
+    environment:
+      - REDIS_HOST=redis-final-project:6379
+      - DB_URL=root:rootsupersecret@tcp(mysql-final-project)/document_verification?charset=utf8mb4&parseTime=True&loc=Local
+      - NEW_BUILDING_CHANNEL=new-building-channel
+      - UPDATE_BUILDING_CHANNEL=update-building-channel
+      - SECRET_KEY=verysupersecretkey
+      - TOKEN_SERVICE=supersecrettokenservices
+
+  user-service:
+    build: ./user-service
+    restart: always
+    container_name: user-service
+    image: user-service
+    environment:
+      - REDIS_HOST=redis-final-project:6379
+      - DB_URL=root:rootsupersecret@tcp(mysql-final-project)/document_verification?charset=utf8mb4&parseTime=True&loc=Local
+      - USER_CHANNEL=user-channel
+      - SECRET_KEY=verysupersecretkey
+      - TOKEN_SERVICE=supersecrettokenservices
+  
+  mysql-final-project:
+    build: ./mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootsupersecret
+      - MYSQL_DATABASE=document_verification
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=rootsecretadmin
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    container_name: mysql-final-project
+    image: mysql-final-project
+
+  redis-final-project:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    container_name: redis-final-project

@@ -1,0 +1,9 @@
+go 1.19
+
+use (
+	./api-gateway
+	./approval-service
+	./auth-service
+	./building-service
+	./user-service
+)
